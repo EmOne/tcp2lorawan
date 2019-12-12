@@ -133,7 +133,7 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
       es->state = ES_CONNECTED;
       es->pcb = tpcb;
       
-      sprintf((char*)data, "sending tcp client message %d", (int)message_count);
+      sprintf((char*)data, "DATA:,01,081219,110945,0,0,00,OOOOO,000000,000000,000,00000,000,000000,000000,000,00000,000,000000,000000,000,00000,000,000000,000000,000,00000,000 message %d", (int)message_count);
         
       /* allocate pbuf */
       es->p_tx = pbuf_alloc(PBUF_TRANSPORT, strlen((char*)data) , PBUF_POOL);
@@ -235,7 +235,7 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
     SendUData(130, (uint8_t *) &recev_buf, p->tot_len);
 
     pbuf_free(p);
-//    tcp_echoclient_connection_close(tpcb, es);
+    tcp_echoclient_connection_close(tpcb, es);
     ret_err = ERR_OK;
   }
 
@@ -388,6 +388,9 @@ static void tcp_echoclient_connection_close(struct tcp_pcb *tpcb, struct echocli
 
   /* close tcp connection */
   tcp_close(tpcb);  
+
+  HAL_Delay(2000);
+  tcp_echoclient_connect();
 }
 
 #endif /* LWIP_TCP */

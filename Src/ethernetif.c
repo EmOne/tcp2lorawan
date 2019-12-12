@@ -472,10 +472,45 @@ void ethernetif_input(struct netif *netif)
 {
   err_t err;
   struct pbuf *p;
+  uint32_t regvalue = 0;
 
   /* move received packet into a new pbuf */
   p = low_level_input(netif);
-    
+
+  netif_set_link_callback(netif, ethernetif_update_config); //added by Volkan
+  // Read PHY link status
+
+  if (HAL_ETH_ReadPHYRegister(&heth, PHY_BSR, &regvalue) == HAL_OK)
+  {
+      if((regvalue & PHY_LINKED_STATUS)== (uint16_t)RESET)
+      {
+        // Link status = disconnected
+         if (netif_is_link_up(netif))
+         {
+            netif_set_down(netif);
+            printf("unplugged\r\n");
+            netif_set_link_down(netif);
+         }
+      }
+      else
+      {
+    	if (!netif_is_link_up(netif))
+		{
+			printf("plugged\r\n");
+			NVIC_SystemReset();
+		}
+      }
+  }
+  else
+  {
+  // Link status = connected
+      if (!netif_is_link_up(netif))
+      {
+          printf("plugged\r\n");
+          NVIC_SystemReset();
+      }
+
+  }
   /* no packet could be read, silently ignore this */
   if (p == NULL) return;
     
