@@ -23,6 +23,7 @@
 #include "WiMOD_LoRaWAN_API.h"
 #include "WiMOD_HCI_Layer.h"
 #include "SerialDevice.h"
+#include "utilities.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -267,6 +268,7 @@ int WiMOD_LoRaWAN_Msg_Req(uint8_t msg_id, uint8_t* val, uint16_t len)
 			break;
 		case LORAWAN_MSG_SET_CUSTOM_CFG_REQ:
 		case LORAWAN_MSG_SET_LINKADRREQ_CONFIG_REQ:
+		case LORAWAN_MSG_SET_BATTERY_LEVEL_REQ:
 			TxMessage.Length = 1;
 			break;
 		case LORAWAN_MSG_SET_JOIN_PARAM_REQ:
@@ -1333,6 +1335,13 @@ WiMOD_LoRaWAN_Process_U_DataRxIndication(TWiMOD_HCI_Message* rxMessage)
         for(int i = 1; i < payloadSize; i++)
         	printf(num2hex(rxMessage->Payload[1+i], BYTE_F));
         printf("\n\r");
+
+        if(rxMessage->Payload[1] == 99) {
+        	CRITICAL_SECTION_BEGIN();
+        	 //Restart system
+        	NVIC_SystemReset();
+
+        }
     }
 
     if (rxMessage->Payload[0] & 0x02)
@@ -1583,7 +1592,6 @@ WiMOD_LoRaWAN_Process_Get_RSTACK_RSP(TWiMOD_HCI_Message* rxMessage)
 	} else {
 		printf("disable\n\r");
 	}
-
 
 	printf("Power Saving Mode: ");
 	if (rxMessage->Payload[4] & 0x1) {
@@ -2169,6 +2177,12 @@ int SendCData(UINT8 port,       // LoRaWAN Port
 
 	// send unconfirmed radio message
 	return WiMOD_LoRaWAN_SendCRadioData(port, srcData, srcLength);
+}
+
+int SetBatLVL(UINT8 batLvl)
+{
+	printf("Set bat lvl: %d\n\r", batLvl);
+	return WiMOD_LoRaWAN_Msg_Req(LORAWAN_MSG_SET_BATTERY_LEVEL_REQ, &batLvl, 1);
 }
 
 //------------------------------------------------------------------------------

@@ -86,6 +86,8 @@ typedef struct
 #define DEVMGMT_MSG_GET_DEVICE_STATUS_REQ 		0x17
 #define DEVMGMT_MSG_GET_DEVICE_STATUS_RSP 		0x18
 
+#define DEVMGMT_MSG_POWER_UP_IND				0x20
+
 #define DEVMGMT_MSG_SET_RTC_ALARM_REQ 			0x31
 #define DEVMGMT_MSG_SET_RTC_ALARM_RSP 			0x32
 #define DEVMGMT_MSG_CLEAR_RTC_ALARM_REQ 		0x33
@@ -93,6 +95,11 @@ typedef struct
 #define DEVMGMT_MSG_GET_RTC_ALARM_REQ			0x35
 #define DEVMGMT_MSG_GET_RTC_ALARM_RSP 			0x36
 #define DEVMGMT_MSG_RTC_ALARM_IND 				0x38
+
+#define DEVMGMT_MSG_SET_HCI_CFG_REQ 			0x41
+#define DEVMGMT_MSG_SET_HCI_CFG_RSP 			0x42
+#define DEVMGMT_MSG_GET_HCI_CFG_REQ 			0x43
+#define DEVMGMT_MSG_GET_HCI_CFG_RSP 			0x44
 
 // Status Identifier
 #define	DEVMGMT_STATUS_OK                       0x00	//Operation successful
@@ -156,6 +163,9 @@ typedef struct
 #define LORAWAN_MSG_SEND_MAC_CMD_REQ 			0x2B
 #define LORAWAN_MSG_SEND_MAC_CMD_RSP 			0x2C
 #define LORAWAN_MSG_RECV_MAC_CMD_IND 			0x2D
+
+#define LORAWAN_MSG_SET_BATTERY_LEVEL_REQ		0x2E
+#define LORAWAN_MSG_SET_BATTERY_LEVEL_RSP		0x2F
 
 #define LORAWAN_MSG_SET_CUSTOM_CFG_REQ 			0x31
 #define LORAWAN_MSG_SET_CUSTOM_CFG_RSP 			0x32
@@ -323,6 +333,7 @@ int SendUData(UINT8 port,       // LoRaWAN Port
 int SendCData(UINT8 port,       // LoRaWAN Port
 		UINT8* srcData,    // application payload
 		size_t srcLength);
+int SetBatLVL(UINT8 batLvl);
 void FactoryReset(void);
 void GetLinkADR(void);
 void SetLinkADR(void);

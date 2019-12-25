@@ -133,7 +133,11 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
       es->state = ES_CONNECTED;
       es->pcb = tpcb;
       
-      sprintf((char*)data, "DATA:,01,081219,110945,0,0,00,OOOOO,000000,000000,000,00000,000,000000,000000,000,00000,000,000000,000000,000,00000,000,000000,000000,000,00000,000 message %d", (int)message_count);
+      memset((uint8_t *)data, 0x0, sizeof data);
+      message_count = 0;
+//      sprintf((char*)data, "message %d", (int)message_count);
+//      sprintf((char*)data, "DATA:,01,081219,110945,0,0,00,OOOOO,000000,000000,000,00000,000,000000,000000,000,00000,000,000000,000000,000,00000,000,000000,000000,000,00000,000\r\n");
+//      sprintf((char*)data, "DATA:,01,081219,110945,0,0,00,OOOOO,000000,000000,000,00000,000,000000,000000,000,00000,000,000000,000000,000,00000,000,000000,000000,000,00000,000 message %d", (int)message_count);
         
       /* allocate pbuf */
       es->p_tx = pbuf_alloc(PBUF_TRANSPORT, strlen((char*)data) , PBUF_POOL);
@@ -141,7 +145,7 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
       if (es->p_tx)
       {       
         /* copy data to pbuf */
-        pbuf_take(es->p_tx, (char*)data, strlen((char*)data));
+//        pbuf_take(es->p_tx, (char*)data, strlen((char*)data));
         
         /* pass newly allocated es structure as argument to tpcb */
         tcp_arg(tpcb, es);
@@ -156,7 +160,7 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
         tcp_poll(tpcb, tcp_echoclient_poll, 1);
     
         /* send data */
-        tcp_echoclient_send(tpcb,es);
+//        tcp_echoclient_send(tpcb,es);
         
         return ERR_OK;
       }
@@ -189,7 +193,7 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
 { 
   struct echoclient *es;
   err_t ret_err; 
-
+  char * i;
   LWIP_ASSERT("arg != NULL",arg != NULL);
   
   es = (struct echoclient *)arg;
@@ -224,18 +228,43 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
   else if(es->state == ES_CONNECTED)
   {
     /* increment message count */
-    message_count++;
-         
+//    message_count++;
+	  BSP_LED_Toggle(LED_GREEN);
     /* Acknowledge data reception */
     tcp_recved(tpcb, p->tot_len);  
     
     memset((uint8_t *)recev_buf, 0x0, sizeof recev_buf);
     memcpy((uint8_t *)recev_buf, (uint8_t *) p->payload, p->tot_len);
 
-    SendUData(130, (uint8_t *) &recev_buf, p->tot_len);
+    printf("BTD MSG.: [%s]\r\n", (char *) recev_buf);
+
+    message_count += (int) strlen((char *)recev_buf);
+
+    if(message_count < sizeof data) {
+		strcat((char *)data, (char *)recev_buf);
+		i = strrchr((char *)data, (int) EOL);
+		if(i != NULL) {
+
+			//Read ADC Battery
+			SetBatLVL(254);
+
+			data[i - (char*)data + 1] = LF;
+			data[i - (char*)data + 2] = 0;
+			data[i - (char*)data + 3] = EOL;
+			printf("SEND MSG.: [%s]\r\n", (char *) data);
+			ret_err = SendUData(130, (uint8_t *) &data, i - (char*)data + 3);
+			memset((uint8_t *)data, 0x0, sizeof data);
+			message_count = 0;
+			BSP_LED_Toggle(LED_BLUE);
+		}
+    } else {
+    	memset((uint8_t *)data, 0x0, sizeof data);
+		message_count = 0;
+    }
 
     pbuf_free(p);
-    tcp_echoclient_connection_close(tpcb, es);
+//    HAL_Delay(2000);
+//    tcp_echoclient_connection_close(tpcb, es);
     ret_err = ERR_OK;
   }
 
@@ -389,7 +418,7 @@ static void tcp_echoclient_connection_close(struct tcp_pcb *tpcb, struct echocli
   /* close tcp connection */
   tcp_close(tpcb);  
 
-  HAL_Delay(2000);
+//  HAL_Delay(2000);
   tcp_echoclient_connect();
 }
 

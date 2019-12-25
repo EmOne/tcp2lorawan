@@ -30,7 +30,7 @@
 /* USER CODE END 0 */
 /* Private function prototypes -----------------------------------------------*/
 /* ETH Variables initialization ----------------------------------------------*/
-extern void Error_Handler(void);
+void Error_Handler(void);
 
 /* USER CODE BEGIN 1 */
 
@@ -55,18 +55,18 @@ uint8_t GATEWAY_ADDRESS[4];
 void MX_LWIP_Init(void)
 {
   /* IP addresses initialization */
-  IP_ADDRESS[0] = IP_ADDR0;
-  IP_ADDRESS[1] = IP_ADDR1;
-  IP_ADDRESS[2] = IP_ADDR2;
-  IP_ADDRESS[3] = IP_ADDR3;
-  NETMASK_ADDRESS[0] = NETMASK_ADDR0;
-  NETMASK_ADDRESS[1] = NETMASK_ADDR1;
-  NETMASK_ADDRESS[2] = NETMASK_ADDR2;
-  NETMASK_ADDRESS[3] = NETMASK_ADDR3;
-  GATEWAY_ADDRESS[0] = GW_ADDR0;
-  GATEWAY_ADDRESS[1] = GW_ADDR1;
-  GATEWAY_ADDRESS[2] = GW_ADDR2;
-  GATEWAY_ADDRESS[3] = GW_ADDR3;
+  IP_ADDRESS[0] = 192;
+  IP_ADDRESS[1] = 168;
+  IP_ADDRESS[2] = 141;
+  IP_ADDRESS[3] = 132;
+  NETMASK_ADDRESS[0] = 255;
+  NETMASK_ADDRESS[1] = 255;
+  NETMASK_ADDRESS[2] = 255;
+  NETMASK_ADDRESS[3] = 0;
+  GATEWAY_ADDRESS[0] = 0;
+  GATEWAY_ADDRESS[1] = 0;
+  GATEWAY_ADDRESS[2] = 0;
+  GATEWAY_ADDRESS[3] = 0;
   
   /* Initilialize the LwIP stack without RTOS */
   lwip_init();

@@ -133,6 +133,9 @@ void Error_Handler(void);
 #define GW_ADDR1   (uint8_t) 0
 #define GW_ADDR2   (uint8_t) 0
 #define GW_ADDR3   (uint8_t) 0
+
+#define EOL	'\r'
+#define LF '\n'
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
