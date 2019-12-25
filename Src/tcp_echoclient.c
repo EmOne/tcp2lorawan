@@ -51,6 +51,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "WiMOD_LoRaWAN_API.h"
+#include "utilities.h"
 
 #if LWIP_TCP
 /* Private typedef -----------------------------------------------------------*/
@@ -59,7 +60,7 @@
 /* Private variables ---------------------------------------------------------*/
 u8_t  recev_buf[255];
 __IO uint32_t message_count=0;
-
+uint32_t packet_count=0;
 u8_t   data[255];
 
 struct tcp_pcb *echoclient_pcb;
@@ -229,8 +230,8 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
   {
     /* increment message count */
 //    message_count++;
-	  BSP_LED_Toggle(LED_GREEN);
-    /* Acknowledge data reception */
+	  BSP_LED_On(LED_BLUE);
+	  /* Acknowledge data reception */
     tcp_recved(tpcb, p->tot_len);  
     
     memset((uint8_t *)recev_buf, 0x0, sizeof recev_buf);
@@ -244,18 +245,23 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
 		strcat((char *)data, (char *)recev_buf);
 		i = strrchr((char *)data, (int) EOL);
 		if(i != NULL) {
+			packet_count++;
 
-			//Read ADC Battery
-			SetBatLVL(254);
+			data[i - (char*)data + 1] = 0;
+			data[i - (char*)data + 2] = LF;
 
-			data[i - (char*)data + 1] = LF;
-			data[i - (char*)data + 2] = 0;
-			data[i - (char*)data + 3] = EOL;
-			printf("SEND MSG.: [%s]\r\n", (char *) data);
-			ret_err = SendUData(130, (uint8_t *) &data, i - (char*)data + 3);
+			printf("SEND MSG.: [%s] len:%d\r\n", (char *) data, i - (char*)data + 2);
+			ret_err = SendUData(130, (uint8_t *) &data, i - (char*)data + 2);
+
+			if(packet_count == 0xFFFF){
+				CRITICAL_SECTION_BEGIN();
+				//Restart system
+				NVIC_SystemReset();
+			}
+
 			memset((uint8_t *)data, 0x0, sizeof data);
 			message_count = 0;
-			BSP_LED_Toggle(LED_BLUE);
+			BSP_LED_Off(LED_BLUE);
 		}
     } else {
     	memset((uint8_t *)data, 0x0, sizeof data);

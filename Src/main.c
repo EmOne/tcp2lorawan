@@ -58,6 +58,10 @@ UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 extern uint8_t UsartTextString;
+/* Variable used to get converted value */
+__IO uint16_t uhADCxConvertedValue = 0;
+static __IO uint16_t BatteryVoltage = BATTERY_MAX_LEVEL;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -145,7 +149,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(500);
+	//Read ADC Battery
+	  SetBatLVL(BoardGetBatteryLevel());
+
+	  HAL_Delay(1000);
 	  BSP_LED_Toggle(LED_GREEN);
 	  HAL_IWDG_Refresh(&hiwdg);
   }
@@ -241,19 +248,19 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_VREFINT;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_144CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
-  */
-  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
-  sConfig.Rank = 2;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
+//  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+//  */
+//  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+//  sConfig.Rank = 2;
+//  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
@@ -477,7 +484,7 @@ static void BSP_Config(void)
   BSP_LED_Init(LED3);
 
   /* Set Systick Interrupt to the highest priority */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0x0, 0x0);
+//  HAL_NVIC_SetPriority(SysTick_IRQn, 0x0, 0x0);
 
   /* Configure Key Button */
   BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_EXTI);
@@ -544,6 +551,66 @@ void BoardCriticalSectionBegin( uint32_t *mask )
 void BoardCriticalSectionEnd( uint32_t *mask )
 {
     __set_PRIMASK( *mask );
+}
+
+uint16_t BoardBatteryMeasureVolage( void )
+{
+    uint32_t batteryVoltage = 0;
+
+    // Read the current Voltage
+    if(HAL_ADC_Start(&hadc1) != HAL_OK)
+	{
+	  /* Start Conversation Error */
+	  Error_Handler();
+	}
+	/*##-4- Wait for the end of conversion #####################################*/
+	/*  Before starting a new conversion, you need to check the current state of
+	 the peripheral; if it’s busy you need to wait for the end of current
+	 conversion before starting a new one.
+	 For simplicity reasons, this example is just waiting till the end of the
+	 conversion, but application may perform other tasks while conversion
+	 operation is ongoing. */
+	HAL_ADC_PollForConversion(&hadc1, 10);
+
+	/* Check if the continuous conversion of regular channel is finished */
+	if ((HAL_ADC_GetState(&hadc1) & HAL_ADC_STATE_EOC_REG)
+			== HAL_ADC_STATE_EOC_REG) {
+		/*##-5- Get the converted value of regular channel  ######################*/
+		uhADCxConvertedValue = HAL_ADC_GetValue(&hadc1);
+	}
+
+    // We don't use the VREF from calibValues here.
+    // calculate the Voltage in millivolt
+    batteryVoltage = ( uint32_t )ADC_VREF_BANDGAP * ( uint32_t )ADC_MAX_VALUE;
+    batteryVoltage = batteryVoltage / ( uint32_t )uhADCxConvertedValue;
+
+    return batteryVoltage;
+}
+
+uint8_t BoardGetBatteryLevel( void )
+{
+    uint8_t batteryLevel = 0;
+
+    BatteryVoltage = BoardBatteryMeasureVolage( );
+
+	if( BatteryVoltage >= BATTERY_MAX_LEVEL )
+	{
+		batteryLevel = 254;
+	}
+	else if( ( BatteryVoltage > BATTERY_MIN_LEVEL ) && ( BatteryVoltage < BATTERY_MAX_LEVEL ) )
+	{
+		batteryLevel = ( ( 253 * ( BatteryVoltage - BATTERY_MIN_LEVEL ) ) / ( BATTERY_MAX_LEVEL - BATTERY_MIN_LEVEL ) ) + 1;
+	}
+	else if( ( BatteryVoltage > BATTERY_SHUTDOWN_LEVEL ) && ( BatteryVoltage <= BATTERY_MIN_LEVEL ) )
+	{
+		batteryLevel = 1;
+	}
+	else //if( BatteryVoltage <= BATTERY_SHUTDOWN_LEVEL )
+	{
+		batteryLevel = 255;
+	}
+
+    return batteryLevel;
 }
 /* USER CODE END 4 */
 

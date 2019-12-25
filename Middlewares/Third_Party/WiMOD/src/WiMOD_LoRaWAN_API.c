@@ -1864,7 +1864,7 @@ void SetRadioStack(void) {
 
 	data[0] = 0x5;	//Default Data Rate Index
 	data[1] = 0x10;	//Default TX Power Level (EIRP)
-	data[2] = 0b11000100;
+	data[2] = 0b11000110;
 //	    Bit 0: 0 = Adaptive Data Rate disabled	    1 = Adaptive Data Rate enabled
 //	    Bit 1: 0 = Duty Cycle Control disabled 1 = Duty Cycle Control enabled (Customer Mode required)
 //	    Bit 2: 0 = Class A selected 1 = Class C selected

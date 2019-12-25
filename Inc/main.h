@@ -136,6 +136,50 @@ void Error_Handler(void);
 
 #define EOL	'\r'
 #define LF '\n'
+
+/*!
+ * Factory power supply
+ */
+#define FACTORY_POWER_SUPPLY                        3300 // mV
+
+/*!
+ * VREF calibration value
+ */
+#define VREFINT_CAL                                 ( *( uint16_t* )0x1FF80078U )
+
+/*!
+ * ADC maximum value
+ */
+#define ADC_MAX_VALUE                               4095
+
+/*!
+ * VREF bandgap value
+ */
+#define ADC_VREF_BANDGAP                            1224 // mV
+
+/*!
+ * Battery thresholds
+ */
+#define BATTERY_MAX_LEVEL                           3000 // mV
+#define BATTERY_MIN_LEVEL                           2400 // mV
+#define BATTERY_SHUTDOWN_LEVEL                      2300 // mV
+/*!
+ * \brief Measure the Battery voltage
+ *
+ * \retval value  battery voltage in volts
+ */
+uint32_t BoardGetBatteryVoltage( void );
+
+/*!
+ * \brief Get the current battery level
+ *
+ * \retval value  battery level [  0: USB,
+ *                                 1: Min level,
+ *                                 x: level
+ *                               254: fully charged,
+ *                               255: Error]
+ */
+uint8_t BoardGetBatteryLevel( void );
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
