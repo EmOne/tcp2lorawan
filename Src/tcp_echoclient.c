@@ -250,8 +250,8 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
 			data[i - (char*)data + 1] = 0;
 			data[i - (char*)data + 2] = LF;
 
-			printf("SEND MSG.: [%s] len:%d\r\n", (char *) data, i - (char*)data + 2);
-			ret_err = SendUData(130, (uint8_t *) &data, i - (char*)data + 2);
+			printf("SEND MSG.: [%s] len:%d\r\n", (char *) data, i - (char*)data + 3);
+			ret_err = SendUData(130, (uint8_t *) &data, i - (char*)data + 3);
 
 			if(packet_count == 0xFFFF){
 				CRITICAL_SECTION_BEGIN();

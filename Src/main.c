@@ -150,7 +150,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	//Read ADC Battery
-	  SetBatLVL(BoardGetBatteryLevel());
+//	  SetBatLVL(BoardGetBatteryLevel());
 
 	  HAL_Delay(1000);
 	  BSP_LED_Toggle(LED_GREEN);
@@ -622,9 +622,9 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-	CRITICAL_SECTION_BEGIN();
+//	CRITICAL_SECTION_BEGIN();
 	        	 //Restart system
-	        	NVIC_SystemReset();
+//	        	NVIC_SystemReset();
   /* USER CODE END Error_Handler_Debug */
 }
 
