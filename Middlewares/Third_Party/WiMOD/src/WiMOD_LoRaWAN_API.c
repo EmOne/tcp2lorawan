@@ -26,10 +26,12 @@
 #include "utilities.h"
 #include <string.h>
 #include <stdio.h>
+#include "lwip/tcp.h"
 
 #define MAKEWORD(lo,hi) ((lo)|((hi) << 8))
 #define MAKELONG(lo,hi) ((lo)|((hi) << 16))
 
+extern struct tcp_pcb *echoclient_pcb;
 //------------------------------------------------------------------------------
 //
 //  Forward Declarations
@@ -1341,6 +1343,8 @@ WiMOD_LoRaWAN_Process_U_DataRxIndication(TWiMOD_HCI_Message* rxMessage)
         	 //Restart system
         	NVIC_SystemReset();
 
+        } else if(rxMessage->Payload[1] == 100) {
+        	tcp_write(echoclient_pcb, rxMessage->Payload + 2, payloadSize, 1);
         }
     }
 
